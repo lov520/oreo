@@ -1,16 +1,11 @@
 import {
-  login,
-  logout,
-  getInfo
-} from '@/api/user'
-// import { getToken, setToken, removeToken } from '@/utils/storage'
-import {
   resetRouter
 } from '@/router'
-const getToken = setToken = removeToken = () => {}
+import storage from '@/utils/storage'
+
 const getDefaultState = () => {
   return {
-    token: getToken(),
+    token: storage.getItem('token'),
     name: '',
     avatar: ''
   }
@@ -24,12 +19,6 @@ const mutations = {
   },
   SET_TOKEN: (state, token) => {
     state.token = token
-  },
-  SET_NAME: (state, name) => {
-    state.name = name
-  },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
   }
 }
 
@@ -38,24 +27,30 @@ const actions = {
   login({
     commit
   }, userInfo) {
-    const {
-      username,
-      password
-    } = userInfo
+    // const {
+    //   username,
+    //   password
+    // } = userInfo
     return new Promise((resolve, reject) => {
-      login({
-        username: username.trim(),
-        password: password
-      }).then(response => {
-        const {
-          data
-        } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
+      const data = {
+        token: 'token'
+      }
+      commit('SET_TOKEN', data.token)
+      storage.setItem('token', data.token)
+      resolve()
+      // login({
+      //   username: username.trim(),
+      //   password: password
+      // }).then(response => {
+      //   const {
+      //     data
+      //   } = response
+      //   commit('SET_TOKEN', data.token)
+      //   setToken(data.token)
+      //   resolve()
+      // }).catch(error => {
+      //   reject(error)
+      // })
     })
   },
 
@@ -65,26 +60,21 @@ const actions = {
     state
   }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
-        const {
-          data
-        } = response
-
-        if (!data) {
-          reject('Verification failed, please Login again.')
-        }
-
-        const {
-          name,
-          avatar
-        } = data
-
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
-        resolve(data)
-      }).catch(error => {
-        reject(error)
+      resolve({
+        name: 'oreo'
       })
+      // getInfo(state.token).then(response => {
+      //   const {
+      //     data
+      //   } = response
+
+      //   if (!data) {
+      //     reject('Verification failed, please Login again.')
+      //   }
+      //   resolve(data)
+      // }).catch(error => {
+      //   reject(error)
+      // })
     })
   },
 
@@ -94,14 +84,19 @@ const actions = {
     state
   }) {
     return new Promise((resolve, reject) => {
-      logout(state.token).then(() => {
-        removeToken() // must remove  token  first
-        resetRouter()
-        commit('RESET_STATE')
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
+      storage.removeItem('token')
+      resetRouter()
+      commit('RESET_STATE')
+      resolve()
+      location.reload()
+      // logout(state.token).then(() => {
+      //   storage.removeItem('token')
+      //   resetRouter()
+      //   commit('RESET_STATE')
+      //   resolve()
+      // }).catch(error => {
+      //   reject(error)
+      // })
     })
   },
 
@@ -110,7 +105,7 @@ const actions = {
     commit
   }) {
     return new Promise(resolve => {
-      removeToken() // must remove  token  first
+      storage.removeItem('token')
       commit('RESET_STATE')
       resolve()
     })

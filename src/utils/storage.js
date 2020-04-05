@@ -20,4 +20,4 @@ class Storage {
   }
 }
 
-export default Storage
+export default new Storage()

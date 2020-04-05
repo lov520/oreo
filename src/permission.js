@@ -3,28 +3,15 @@ import store from './store'
 import {
   Message
 } from 'element-ui'
-import NProgress from 'nprogress' // progress bar
-import 'nprogress/nprogress.css' // progress bar style
-import {
-  getToken
-} from '@/utils/storage' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
-
-NProgress.configure({
-  showSpinner: false
-}) // NProgress Configuration
+import storage from '@/utils/storage'
 
 const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async (to, from, next) => {
-  // start progress bar
-  NProgress.start()
-
-  // set page title
   document.title = getPageTitle(to.meta.title)
 
-  // determine whether the user has logged in
-  const hasToken = getToken()
+  const hasToken = storage.getItem('token')
 
   if (hasToken) {
     if (to.path === '/login') {
@@ -32,14 +19,12 @@ router.beforeEach(async (to, from, next) => {
       next({
         path: '/'
       })
-      NProgress.done()
     } else {
-      const hasGetUserInfo = store.getters.name
+      const hasGetUserInfo = store.getters.name || 'oreo'
       if (hasGetUserInfo) {
         next()
       } else {
         try {
-          // get user info
           await store.dispatch('user/getInfo')
 
           next()
@@ -48,7 +33,6 @@ router.beforeEach(async (to, from, next) => {
           await store.dispatch('user/resetToken')
           Message.error(error || 'Has Error')
           next(`/login?redirect=${to.path}`)
-          NProgress.done()
         }
       }
     }
@@ -61,12 +45,8 @@ router.beforeEach(async (to, from, next) => {
     } else {
       // other pages that do not have permission to access are redirected to the login page.
       next(`/login?redirect=${to.path}`)
-      NProgress.done()
     }
   }
 })
 
-router.afterEach(() => {
-  // finish progress bar
-  NProgress.done()
-})
+router.afterEach(() => {})
